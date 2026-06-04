@@ -1,4 +1,6 @@
-function Header({ onNewCardClick, onUserClick }) {
+import PopUser from "./popups/PopUser";
+
+function Header({ onNewCardClick, onUserClick, isUserPopupOpen, onLogout }) {
   return (
     <header className="header">
       <div className="container">
@@ -14,12 +16,21 @@ function Header({ onNewCardClick, onUserClick }) {
             </a>
           </div>
           <nav className="header__nav">
-            <button className="header__btn-main-new _hover01" onClick={onNewCardClick}>
+            <button
+              className="header__btn-main-new _hover01"
+              onClick={onNewCardClick}
+            >
               <a href="#popNewCard">Создать новую задачу</a>
             </button>
-            <a href="#user-set-target" className="header__user _hover02" onClick={onUserClick}>
+            <a
+              href="#user-set-target"
+              className="header__user _hover02"
+              onClick={onUserClick}
+            >
               Ivan Ivanov
             </a>
+            {/* PopUser ВНУТРИ навигации, а не снаружи */}
+            {isUserPopupOpen && <PopUser onLogout={onLogout} />}
           </nav>
         </div>
       </div>
