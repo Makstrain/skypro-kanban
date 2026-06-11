@@ -1,6 +1,14 @@
+import { useState } from "react";
 import PopUser from "./popups/PopUser";
 
-function Header({ onNewCardClick, onUserClick, isUserPopupOpen, onLogout }) {
+function Header({ onNewCardClick, onLogout }) {
+  const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
+
+  const toggleUserPopup = (e) => {
+    e.preventDefault();
+    setIsUserPopupOpen(!isUserPopupOpen);
+  };
+
   return (
     <header className="header">
       <div className="container">
@@ -22,14 +30,15 @@ function Header({ onNewCardClick, onUserClick, isUserPopupOpen, onLogout }) {
             >
               <a href="#popNewCard">Создать новую задачу</a>
             </button>
+
             <a
               href="#user-set-target"
               className="header__user _hover02"
-              onClick={onUserClick}
+              onClick={toggleUserPopup}
             >
               Ivan Ivanov
             </a>
-            {/* PopUser ВНУТРИ навигации, а не снаружи */}
+
             {isUserPopupOpen && <PopUser onLogout={onLogout} />}
           </nav>
         </div>

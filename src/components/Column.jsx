@@ -7,8 +7,10 @@ function Column({ title, cards }) {
         <p>{title}</p>
       </div>
       <div className="cards">
-        {cards.map((card, index) => (
-          <div className="cards__item" key={index}>
+        {cards.map((card) => (
+          <div className="cards__item" key={card.id}>
+            {" "}
+            {/* ← уникальный id карточки */}
             <Card
               title={card.title}
               theme={card.theme}
