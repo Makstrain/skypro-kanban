@@ -1,5 +1,5 @@
 import Column from "./Column";
-import { columns } from "../data"; // ← импорт данных
+import { statuses, cards } from "../data";
 
 function Main() {
   return (
@@ -7,11 +7,12 @@ function Main() {
       <div className="container">
         <div className="main__block">
           <div className="main__content">
-            {columns.map((column) => (
+            {statuses.map((status) => (
               <Column
-                key={column.id} // ← уникальный id колонки
-                title={column.title}
-                cards={column.cards}
+                key={status.id}
+                title={status.title}
+                // Фильтруем карточки: оставляем только те, у которых статус совпадает
+                cards={cards.filter((card) => card.status === status.status)}
               />
             ))}
           </div>
