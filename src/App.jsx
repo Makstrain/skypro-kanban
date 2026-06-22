@@ -1,9 +1,10 @@
+// src/App.jsx
 import { useState, useEffect } from "react";
-import Header from "./components/Header";
-import Main from "./components/Main";
-import PopNewCard from "./components/popups/PopNewCard";
-import PopBrowse from "./components/popups/PopBrowse";
-import "./App.css";
+import Header from "./components/Header/Header";
+import Main from "./components/Main/Main";
+import PopNewCard from "./components/popups/PopNewCard/PopNewCard";
+import PopBrowse from "./components/popups/PopBrowse/PopBrowse";
+//import "./App.css";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -16,6 +17,12 @@ function App() {
 
   const [isNewCardOpen, setIsNewCardOpen] = useState(false);
   const [isBrowseOpen, setIsBrowseOpen] = useState(false);
+  const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
+
+  const handleCardClick = (card) => {
+    console.log("Открыта карточка:", card);
+    setIsBrowseOpen(true);
+  };
 
   return (
     <div className="wrapper">
@@ -24,6 +31,8 @@ function App() {
 
       <Header
         onNewCardClick={() => setIsNewCardOpen(true)}
+        onUserClick={() => setIsUserPopupOpen(!isUserPopupOpen)} // ← ДОБАВИТЬ
+        isUserPopupOpen={isUserPopupOpen} // ← ДОБАВИТЬ
         onLogout={() => console.log("Выход")}
       />
 
@@ -32,7 +41,7 @@ function App() {
           <p className="loading-text">Данные загружаются...</p>
         </div>
       ) : (
-        <Main />
+        <Main onCardClick={handleCardClick} />
       )}
 
       <div className="ticks"></div>
