@@ -1,4 +1,5 @@
 // src/components/popups/PopUser/PopUser.jsx
+import { Link } from "react-router-dom";
 import {
   PopUserContainer,
   PopUserName,
@@ -8,7 +9,7 @@ import {
   LogoutButton,
 } from "./PopUser.styled";
 
-function PopUser({ onLogout }) {
+function PopUser({ onClose }) {
   return (
     <PopUserContainer>
       <PopUserName>Ivan Ivanov</PopUserName>
@@ -17,8 +18,10 @@ function PopUser({ onLogout }) {
         <p>Темная тема</p>
         <Checkbox type="checkbox" className="checkbox" name="checkbox" />
       </PopUserTheme>
-      <LogoutButton type="button" onClick={onLogout}>
-        <a href="#popExit">Выйти</a>
+      <LogoutButton type="button">
+        <Link to="/exit" onClick={onClose}>
+          Выйти
+        </Link>
       </LogoutButton>
     </PopUserContainer>
   );

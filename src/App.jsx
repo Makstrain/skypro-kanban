@@ -1,12 +1,13 @@
 // src/App.jsx
 import { useState, useEffect } from "react";
+import { BrowserRouter } from "react-router-dom";
 import Header from "./components/Header/Header";
-import Main from "./components/Main/Main";
 import PopNewCard from "./components/popups/PopNewCard/PopNewCard";
 import PopBrowse from "./components/popups/PopBrowse/PopBrowse";
-//import "./App.css";
+import AppRoutes from "./components/AppRoutes";
 
 function App() {
+  // ===== ЗАГРУЗКА =====
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,6 +16,18 @@ function App() {
     }, 2000);
   }, []);
 
+  // ===== АВТОРИЗАЦИЯ =====
+  const [isAuth, setIsAuth] = useState(false);
+
+  const handleLogin = () => {
+    setIsAuth(true);
+  };
+
+  const handleLogout = () => {
+    setIsAuth(false);
+  };
+
+  // ===== МОДАЛЬНЫЕ ОКНА =====
   const [isNewCardOpen, setIsNewCardOpen] = useState(false);
   const [isBrowseOpen, setIsBrowseOpen] = useState(false);
   const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
@@ -24,30 +37,51 @@ function App() {
     setIsBrowseOpen(true);
   };
 
+  // ===== РЕНДЕР =====
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <p className="loading-text">Данные загружаются...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="wrapper">
-      {isNewCardOpen && <PopNewCard onClose={() => setIsNewCardOpen(false)} />}
-      {isBrowseOpen && <PopBrowse onClose={() => setIsBrowseOpen(false)} />}
+    <BrowserRouter>
+      <div className="wrapper">
+        {/* Модальные окна (отображаются поверх всего) */}
+        {isNewCardOpen && (
+          <PopNewCard onClose={() => setIsNewCardOpen(false)} />
+        )}
+        {isBrowseOpen && <PopBrowse onClose={() => setIsBrowseOpen(false)} />}
 
-      <Header
-        onNewCardClick={() => setIsNewCardOpen(true)}
-        onUserClick={() => setIsUserPopupOpen(!isUserPopupOpen)} // ← ДОБАВИТЬ
-        isUserPopupOpen={isUserPopupOpen} // ← ДОБАВИТЬ
-        onLogout={() => console.log("Выход")}
-      />
+        {/* Хедер (только для авторизованных) */}
+        {isAuth && (
+          <Header
+            onNewCardClick={() => setIsNewCardOpen(true)}
+            onUserClick={() => setIsUserPopupOpen(!isUserPopupOpen)}
+            isUserPopupOpen={isUserPopupOpen}
+          />
+        )}
 
-      {loading ? (
-        <div className="loading-container">
-          <p className="loading-text">Данные загружаются...</p>
-        </div>
-      ) : (
-        <Main onCardClick={handleCardClick} />
-      )}
+        {/* Роутинг */}
+        <AppRoutes
+          isAuth={isAuth}
+          onLogin={handleLogin}
+          onLogout={handleLogout}
+          onCardClick={handleCardClick}
+        />
 
-      <div className="ticks"></div>
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </div>
+        {/* Элементы подвала (только для авторизованных) */}
+        {isAuth && (
+          <>
+            <div className="ticks"></div>
+            <div className="ticks"></div>
+            <section id="spacer"></section>
+          </>
+        )}
+      </div>
+    </BrowserRouter>
   );
 }
 

@@ -1,5 +1,6 @@
 // src/components/Header/Header.jsx
-import { useEffect, useRef } from "react";
+import { useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import PopUser from "../popups/PopUser/PopUser";
 import {
   HeaderContainer,
@@ -10,19 +11,20 @@ import {
   UserLink,
 } from "./Header.styled";
 
-function Header({ onNewCardClick, onUserClick, isUserPopupOpen, onLogout }) {
+function Header({ onNewCardClick, onUserClick, isUserPopupOpen }) {
   const popupRef = useRef(null);
+  const userLinkRef = useRef(null);
 
-  // Закрытие при клике вне попапа
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (popupRef.current && !popupRef.current.contains(event.target)) {
-        // Проверяем, что клик не по ссылке "Ivan Ivanov"
-        const userLink = event.target.closest(".header__user");
-        if (!userLink && isUserPopupOpen) {
-          onUserClick(); // Закрываем попап
-        }
+      if (!isUserPopupOpen) return;
+      if (userLinkRef.current && userLinkRef.current.contains(event.target)) {
+        return;
       }
+      if (popupRef.current && popupRef.current.contains(event.target)) {
+        return;
+      }
+      onUserClick();
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -36,20 +38,19 @@ function Header({ onNewCardClick, onUserClick, isUserPopupOpen, onLogout }) {
       <div className="container">
         <HeaderBlock>
           <Logo>
-            <a href="" target="_self">
+            <Link to="/">
               <img src="images/logo.png" alt="logo" />
-            </a>
+            </Link>
           </Logo>
           <Nav>
             <CreateButton onClick={onNewCardClick}>
-              <a href="#popNewCard">Создать новую задачу</a>
+              Создать новую задачу
             </CreateButton>
-            <UserLink className="header__user" onClick={onUserClick}>
+            <UserLink ref={userLinkRef} onClick={onUserClick}>
               Ivan Ivanov
             </UserLink>
-            {/* Оборачиваем PopUser в div с ref */}
             <div ref={popupRef}>
-              {isUserPopupOpen && <PopUser onLogout={onLogout} />}
+              {isUserPopupOpen && <PopUser onClose={onUserClick} />}
             </div>
           </Nav>
         </HeaderBlock>
