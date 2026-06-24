@@ -7,7 +7,7 @@ import {
   CardsItem,
 } from "./Column.styled";
 
-function Column({ title, cards, onCardClick }) {
+function Column({ title, cards }) {
   return (
     <ColumnWrapper>
       <ColumnTitle>
@@ -21,7 +21,7 @@ function Column({ title, cards, onCardClick }) {
               theme={card.theme}
               date={card.date}
               themeClass={card.themeClass}
-              onCardClick={() => onCardClick(card)}
+              cardId={card.id}
             />
           </CardsItem>
         ))}

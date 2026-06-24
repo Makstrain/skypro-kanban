@@ -11,7 +11,7 @@ import {
   UserLink,
 } from "./Header.styled";
 
-function Header({ onNewCardClick, onUserClick, isUserPopupOpen }) {
+function Header({ onUserClick, isUserPopupOpen }) {
   const popupRef = useRef(null);
   const userLinkRef = useRef(null);
 
@@ -43,8 +43,8 @@ function Header({ onNewCardClick, onUserClick, isUserPopupOpen }) {
             </Link>
           </Logo>
           <Nav>
-            <CreateButton onClick={onNewCardClick}>
-              Создать новую задачу
+            <CreateButton>
+              <Link to="/add-card">Создать новую задачу</Link>
             </CreateButton>
             <UserLink ref={userLinkRef} onClick={onUserClick}>
               Ivan Ivanov
