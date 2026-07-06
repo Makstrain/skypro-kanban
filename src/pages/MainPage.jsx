@@ -1,4 +1,5 @@
 // src/pages/MainPage.jsx
+
 import { useState, useEffect } from "react";
 import Main from "../components/Main/Main";
 

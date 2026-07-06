@@ -1,8 +1,11 @@
 // src/pages/CardPage.jsx
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { cards } from "../data";
+import { getTaskById, deleteTask } from "../services/tasks";
 import Calendar from "../components/Calendar/Calendar";
+
+// ============ СТИЛИ (ТВОИ, БЕЗ ИЗМЕНЕНИЙ) ============
 
 const Container = styled.div`
   display: flex;
@@ -288,6 +291,8 @@ const BtnBg = styled.button`
   }
 `;
 
+// ============ МАППИНГ СТАТУСОВ ============
+
 const statusMap = {
   "no-status": "Без статуса",
   "to-do": "Нужно сделать",
@@ -296,12 +301,84 @@ const statusMap = {
   done: "Готово",
 };
 
+const themeClassMap = {
+  "Web Design": "_orange",
+  Research: "_green",
+  Copywriting: "_purple",
+};
+
+// ============ КОМПОНЕНТ ============
+
 function CardPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const card = cards.find((c) => c.id === Number(id));
 
-  if (!card) {
+  const [task, setTask] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Загружаем задачу с сервера
+  useEffect(() => {
+    const fetchTask = async () => {
+      try {
+        setLoading(true);
+        const data = await getTaskById(id);
+        setTask(data);
+        setError("");
+      } catch (err) {
+        setError(err.message || "Ошибка загрузки задачи");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchTask();
+    }
+  }, [id]);
+
+  // Удаление задачи
+  const handleDelete = async () => {
+    if (!window.confirm("Вы уверены, что хотите удалить задачу?")) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteTask(id);
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Ошибка удаления задачи");
+      setIsDeleting(false);
+    }
+  };
+
+  // ============ РЕНДЕР ============
+
+  if (loading) {
+    return (
+      <Container>
+        <CardWrapper>
+          <Title>Загрузка...</Title>
+        </CardWrapper>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <CardWrapper>
+          <Title>Ошибка</Title>
+          <p style={{ color: "red" }}>{error}</p>
+          <ButtonsWrapper>
+            <BtnBg onClick={() => navigate("/")}>На главную</BtnBg>
+          </ButtonsWrapper>
+        </CardWrapper>
+      </Container>
+    );
+  }
+
+  if (!task) {
     return (
       <Container>
         <CardWrapper>
@@ -314,15 +391,29 @@ function CardPage() {
     );
   }
 
+  const themeClass = themeClassMap[task.topic] || "_orange";
+  const statusKey =
+    task.status === "Без статуса"
+      ? "no-status"
+      : task.status === "Нужно сделать"
+        ? "to-do"
+        : task.status === "В работе"
+          ? "in-progress"
+          : task.status === "Тестирование"
+            ? "testing"
+            : task.status === "Готово"
+              ? "done"
+              : "no-status";
+
   return (
     <Container>
       <CardWrapper>
         <TopBlock>
           <Title>
-            {card.title} <span>ID: {id}</span>
+            {task.title} <span>ID: {task._id}</span>
           </Title>
-          <ThemeTop color={card.themeClass}>
-            <p>{card.theme}</p>
+          <ThemeTop color={themeClass}>
+            <p>{task.topic}</p>
           </ThemeTop>
         </TopBlock>
 
@@ -330,32 +421,32 @@ function CardPage() {
           <StatusP>Статус</StatusP>
           <StatusThemes>
             <StatusTheme
-              className={`active ${card.status === "no-status" ? "" : "hide"}`}
-              status={card.status}
+              className={`active ${statusKey === "no-status" ? "" : "hide"}`}
+              status={statusKey}
             >
               <p>Без статуса</p>
             </StatusTheme>
             <StatusTheme
-              className={`active ${card.status === "to-do" ? "" : "hide"}`}
-              status={card.status}
+              className={`active ${statusKey === "to-do" ? "" : "hide"}`}
+              status={statusKey}
             >
               <p>Нужно сделать</p>
             </StatusTheme>
             <StatusTheme
-              className={`active ${card.status === "in-progress" ? "" : "hide"}`}
-              status={card.status}
+              className={`active ${statusKey === "in-progress" ? "" : "hide"}`}
+              status={statusKey}
             >
               <p>В работе</p>
             </StatusTheme>
             <StatusTheme
-              className={`active ${card.status === "testing" ? "" : "hide"}`}
-              status={card.status}
+              className={`active ${statusKey === "testing" ? "" : "hide"}`}
+              status={statusKey}
             >
               <p>Тестирование</p>
             </StatusTheme>
             <StatusTheme
-              className={`active ${card.status === "done" ? "" : "hide"}`}
-              status={card.status}
+              className={`active ${statusKey === "done" ? "" : "hide"}`}
+              status={statusKey}
             >
               <p>Готово</p>
             </StatusTheme>
@@ -370,10 +461,13 @@ function CardPage() {
               id="textArea01"
               readOnly
               placeholder="Введите описание задачи..."
-              value={`${card.title} — это пример описания задачи.`}
+              value={task.description || "Нет описания"}
             />
           </FormBlock>
-          <Calendar title="Срок исполнения:" date={card.date} />
+          <Calendar
+            title="Срок исполнения:"
+            date={new Date(task.date).toLocaleDateString("ru-RU")}
+          />
         </Wrap>
 
         <ButtonsWrapper>
@@ -381,8 +475,8 @@ function CardPage() {
             <BtnBorder>
               <a href="#">Редактировать задачу</a>
             </BtnBorder>
-            <BtnBorder>
-              <a href="#">Удалить задачу</a>
+            <BtnBorder onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? "Удаление..." : "Удалить задачу"}
             </BtnBorder>
           </BtnGroup>
           <BtnBg onClick={() => navigate("/")}>Закрыть</BtnBg>

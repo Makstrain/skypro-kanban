@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Calendar from "../components/Calendar/Calendar";
+import { createTask } from "../services/tasks";
 
 const Container = styled.div`
   display: flex;
@@ -46,6 +47,7 @@ const Form = styled.form`
   max-width: 370px;
   width: 100%;
   display: block;
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
 
   @media screen and (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     max-width: 100%;
@@ -116,7 +118,7 @@ const Subttl = styled.label`
 `;
 
 const Categories = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.md}; // ← уменьшили отступ
+  margin-bottom: ${({ theme }) => theme.spacing.xl};
 `;
 
 const CategoriesP = styled.p`
@@ -181,7 +183,7 @@ const ButtonsWrapper = styled.div`
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  margin-top: ${({ theme }) => theme.spacing.sm}; // ← уменьшили отступ
+  margin-top: ${({ theme }) => theme.spacing.md};
   width: 100%;
 `;
 
@@ -214,12 +216,34 @@ function AddCardPage() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("orange");
+  const [selectedCategory, setSelectedCategory] = useState("Web Design");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Создаём задачу:", { title, description, selectedCategory });
-    navigate("/");
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const taskData = {
+        title: title || "Новая задача",
+        topic: selectedCategory || "Research",
+        description: description || "",
+        date: new Date().toISOString(),
+        status: "Без статуса",
+      };
+
+      console.log("📤 Создаём задачу:", taskData);
+      await createTask(taskData);
+      console.log("✅ Задача создана!");
+      navigate("/");
+    } catch (err) {
+      console.error("❌ Ошибка создания:", err);
+      setError(err.message || "Ошибка создания задачи");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -228,7 +252,7 @@ function AddCardPage() {
         <Title>Создание задачи</Title>
 
         <Wrap>
-          <Form>
+          <Form onSubmit={handleSubmit}>
             <FormBlock>
               <Subttl htmlFor="formTitle">Название задачи</Subttl>
               <Input
@@ -238,6 +262,7 @@ function AddCardPage() {
                 placeholder="Введите название задачи..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
+                disabled={isLoading}
                 autoFocus
               />
             </FormBlock>
@@ -249,6 +274,7 @@ function AddCardPage() {
                 placeholder="Введите описание задачи..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                disabled={isLoading}
               />
             </FormBlock>
 
@@ -257,35 +283,43 @@ function AddCardPage() {
               <CategoriesThemes>
                 <CategoryTheme
                   color="orange"
-                  $active={selectedCategory === "orange"}
-                  onClick={() => setSelectedCategory("orange")}
+                  $active={selectedCategory === "Web Design"}
+                  onClick={() => setSelectedCategory("Web Design")}
                 >
                   <p>Web Design</p>
                 </CategoryTheme>
                 <CategoryTheme
                   color="green"
-                  $active={selectedCategory === "green"}
-                  onClick={() => setSelectedCategory("green")}
+                  $active={selectedCategory === "Research"}
+                  onClick={() => setSelectedCategory("Research")}
                 >
                   <p>Research</p>
                 </CategoryTheme>
                 <CategoryTheme
                   color="purple"
-                  $active={selectedCategory === "purple"}
-                  onClick={() => setSelectedCategory("purple")}
+                  $active={selectedCategory === "Copywriting"}
+                  onClick={() => setSelectedCategory("Copywriting")}
                 >
                   <p>Copywriting</p>
                 </CategoryTheme>
               </CategoriesThemes>
             </Categories>
+
+            {error && (
+              <p style={{ color: "red", fontSize: 14, marginBottom: 10 }}>
+                {error}
+              </p>
+            )}
+
+            <ButtonsWrapper>
+              <BtnBg type="submit" disabled={isLoading}>
+                {isLoading ? "Создание..." : "Создать задачу"}
+              </BtnBg>
+            </ButtonsWrapper>
           </Form>
 
           <Calendar />
         </Wrap>
-
-        <ButtonsWrapper>
-          <BtnBg onClick={handleSubmit}>Создать задачу</BtnBg>
-        </ButtonsWrapper>
       </CardWrapper>
     </Container>
   );
