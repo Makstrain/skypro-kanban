@@ -6,10 +6,10 @@ import { theme } from "./styles/theme";
 import App from "./App.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <ThemeProvider theme={theme}>
-      <GlobalStyles />
-      <App />
-    </ThemeProvider>
-  </StrictMode>,
+  // <StrictMode>
+  <ThemeProvider theme={theme}>
+    <GlobalStyles />
+    <App />
+  </ThemeProvider>,
+  // </StrictMode>,
 );

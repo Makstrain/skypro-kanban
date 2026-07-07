@@ -3,33 +3,43 @@ import { Routes, Route } from "react-router-dom";
 import ProtectedRoute from "./ProtectedRoute";
 import SigninPage from "../pages/SigninPage";
 import SignupPage from "../pages/SignupPage";
-import MainPage from "../pages/MainPage";
 import CardPage from "../pages/CardPage";
+import EditCardPage from "../pages/EditCardPage"; // ← добавить
 import AddCardPage from "../pages/AddCardPage";
 import ExitPage from "../pages/ExitPage";
 import NotFoundPage from "../pages/NotFoundPage";
 
-function AppRoutes({ isAuth, onLogin, onLogout, onCardClick }) {
+function AppRoutes({ isAuth, onLogin, onLogout }) {
   return (
     <Routes>
       {/* Открытые страницы */}
       <Route path="/signin" element={<SigninPage onLogin={onLogin} />} />
       <Route path="/signup" element={<SignupPage />} />
 
-      {/* Защищенные страницы */}
+      {/* Главная страница */}
       <Route
         path="/"
         element={
           <ProtectedRoute isAuth={isAuth}>
-            <MainPage onCardClick={onCardClick} />
+            <div />
           </ProtectedRoute>
         }
       />
+
+      {/* Защищенные страницы */}
       <Route
         path="/card/:id"
         element={
           <ProtectedRoute isAuth={isAuth}>
             <CardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/edit-card/:id" // ← новый маршрут
+        element={
+          <ProtectedRoute isAuth={isAuth}>
+            <EditCardPage />
           </ProtectedRoute>
         }
       />
@@ -41,12 +51,8 @@ function AppRoutes({ isAuth, onLogin, onLogout, onCardClick }) {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/exit"
-        element={<ExitPage onLogout={onLogout} />} // ← исправлено!
-      />
 
-      {/* 404 */}
+      <Route path="/exit" element={<ExitPage onLogout={onLogout} />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

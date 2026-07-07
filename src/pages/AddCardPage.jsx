@@ -6,12 +6,18 @@ import Calendar from "../components/Calendar/Calendar";
 import { createTask } from "../services/tasks";
 
 const Container = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: ${({ theme }) => theme.colors.bgPrimary};
+  background: rgba(0, 0, 0, 0.4);
   padding: 20px;
+  z-index: 1000;
 `;
 
 const CardWrapper = styled.div`
@@ -23,6 +29,7 @@ const CardWrapper = styled.div`
   border: 0.7px solid ${({ theme }) => theme.colors.border};
   box-shadow: ${({ theme }) => theme.colors.shadow};
   position: relative;
+  z-index: 1001;
 `;
 
 const Title = styled.h3`
@@ -217,6 +224,7 @@ function AddCardPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Web Design");
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -230,14 +238,14 @@ function AddCardPage() {
         title: title || "Новая задача",
         topic: selectedCategory || "Research",
         description: description || "",
-        date: new Date().toISOString(),
+        date: selectedDate.toISOString(),
         status: "Без статуса",
       };
 
       console.log("📤 Создаём задачу:", taskData);
       await createTask(taskData);
       console.log("✅ Задача создана!");
-      navigate("/");
+      navigate("/", { state: { refresh: true } });
     } catch (err) {
       console.error("❌ Ошибка создания:", err);
       setError(err.message || "Ошибка создания задачи");
@@ -318,7 +326,7 @@ function AddCardPage() {
             </ButtonsWrapper>
           </Form>
 
-          <Calendar />
+          <Calendar date={selectedDate} onDateChange={setSelectedDate} />
         </Wrap>
       </CardWrapper>
     </Container>

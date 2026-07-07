@@ -1,9 +1,9 @@
-// src/pages/CardPage.jsx
+// src/pages/EditCardPage.jsx
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { getTaskById, deleteTask, getTasks } from "../services/tasks";
 import Calendar from "../components/Calendar/Calendar";
+import { getTaskById, updateTask, deleteTask } from "../services/tasks";
 
 // ============ СТИЛИ (без изменений) ============
 
@@ -118,6 +118,8 @@ const StatusTheme = styled.div`
   padding: 11px 14px 10px;
   margin-right: ${({ theme }) => theme.spacing.sm};
   margin-bottom: ${({ theme }) => theme.spacing.sm};
+  cursor: pointer;
+  transition: all 0.2s;
 
   p {
     font-size: ${({ theme }) => theme.fonts.size.sm};
@@ -125,7 +127,11 @@ const StatusTheme = styled.div`
     letter-spacing: -0.14px;
   }
 
-  &.active {
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &.selected {
     background: ${({ theme, $status }) => {
       switch ($status) {
         case "no-status":
@@ -176,8 +182,8 @@ const StatusTheme = styled.div`
     }};
   }
 
-  &.hide {
-    display: none;
+  &.not-selected {
+    opacity: 0.4;
   }
 `;
 
@@ -215,6 +221,11 @@ const Textarea = styled.textarea`
   letter-spacing: -0.14px;
   margin-top: ${({ theme }) => theme.spacing.sm};
   height: 200px;
+  font-family: inherit;
+
+  &:focus {
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
 
   @media screen and (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     max-width: 100%;
@@ -258,13 +269,9 @@ const BtnBorder = styled.button`
     color: ${({ theme }) => theme.colors.textLight};
   }
 
-  a {
-    color: ${({ theme }) => theme.colors.primary};
-    text-decoration: none;
-  }
-
-  &:hover a {
-    color: ${({ theme }) => theme.colors.textLight};
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   @media screen and (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
@@ -287,9 +294,9 @@ const BtnBg = styled.button`
     background-color: ${({ theme }) => theme.colors.primaryHover};
   }
 
-  a {
-    color: ${({ theme }) => theme.colors.textLight};
-    text-decoration: none;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   @media screen and (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
@@ -300,6 +307,14 @@ const BtnBg = styled.button`
 
 // ============ МАППИНГ СТАТУСОВ ============
 
+const statusKeyMap = {
+  "Без статуса": "no-status",
+  "Нужно сделать": "to-do",
+  "В работе": "in-progress",
+  Тестирование: "testing",
+  Готово: "done",
+};
+
 const themeClassMap = {
   "Web Design": "_orange",
   Research: "_green",
@@ -308,42 +323,83 @@ const themeClassMap = {
 
 // ============ КОМПОНЕНТ ============
 
-function CardPage() {
+function EditCardPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [task, setTask] = useState(null);
+  const [loading, setLoading] = useState(true); // ✅ добавили состояние загрузки
   const [error, setError] = useState("");
-  const [isDeleting, setIsDeleting] = useState(false);
 
+  const [editDescription, setEditDescription] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+  const [editDate, setEditDate] = useState(new Date());
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+
+  // Загружаем задачу
   useEffect(() => {
     const fetchTask = async () => {
+      setLoading(true); // ✅ начинаем загрузку
       try {
         const data = await getTaskById(id);
         setTask(data);
+        setEditDescription(data.description || "");
+        setEditStatus(data.status || "Без статуса");
+        setEditDate(new Date(data.date));
         setError("");
       } catch (err) {
         setError(err.message || "Ошибка загрузки задачи");
+      } finally {
+        setLoading(false); // ✅ загрузка завершена
       }
     };
 
     if (id) {
       fetchTask();
+    } else {
+      setError("ID задачи не передан");
+      setLoading(false);
     }
   }, [id]);
 
-  // ✅ Удаление задачи с обновлением доски
+  // ✅ Сохранить изменения
+  const handleSave = async () => {
+    if (!isDirty) return;
+
+    setIsSaving(true);
+    try {
+      const taskData = {
+        title: task.title,
+        topic: task.topic,
+        description: editDescription,
+        status: editStatus,
+        date: editDate.toISOString(),
+      };
+
+      await updateTask(id, taskData);
+      navigate("/", { state: { refresh: true }, replace: true });
+    } catch (err) {
+      console.error("❌ Ошибка сохранения:", err);
+      setError(err.message || "Ошибка сохранения");
+      setIsSaving(false);
+    }
+  };
+
+  // ✅ Отменить изменения
+  const handleCancel = () => {
+    navigate(`/card/${id}`);
+  };
+
+  // ✅ Удалить задачу
   const handleDelete = async () => {
     if (!window.confirm("Вы уверены, что хотите удалить задачу?")) return;
 
     setIsDeleting(true);
     try {
       await deleteTask(id);
-
-      // ✅ Обновляем данные на главной
-      await getTasks();
-
-      // Переходим на главную с флагом обновления
       navigate("/", { state: { refresh: true }, replace: true });
     } catch (err) {
       console.error("❌ Ошибка удаления:", err);
@@ -352,12 +408,64 @@ function CardPage() {
     }
   };
 
+  // ✅ Закрыть
+  const handleClose = () => {
+    navigate("/");
+  };
+
+  // ✅ Выбор статуса
+  const handleStatusClick = (status) => {
+    setEditStatus(status);
+    setIsDirty(true);
+  };
+
+  // ✅ Изменение описания
+  const handleDescriptionChange = (e) => {
+    setEditDescription(e.target.value);
+    setIsDirty(true);
+  };
+
+  // ✅ Изменение даты
+  const handleDateChange = (date) => {
+    setEditDate(date);
+    setIsDirty(true);
+  };
+
+  // ============ РЕНДЕР ============
+
+  // ✅ Показываем загрузку, пока данные не пришли
+  if (loading) {
+    return (
+      <Container>
+        <CardWrapper>
+          <Title>Загрузка...</Title>
+          <p style={{ color: "#94A6BE", marginTop: 10 }}>
+            Пожалуйста, подождите
+          </p>
+        </CardWrapper>
+      </Container>
+    );
+  }
+
   if (error) {
     return (
       <Container>
         <CardWrapper>
           <Title>Ошибка</Title>
           <p style={{ color: "red" }}>{error}</p>
+          <ButtonsWrapper>
+            <BtnBg onClick={() => navigate(`/card/${id}`)}>Назад</BtnBg>
+          </ButtonsWrapper>
+        </CardWrapper>
+      </Container>
+    );
+  }
+
+  if (!task) {
+    return (
+      <Container>
+        <CardWrapper>
+          <Title>Задача не найдена</Title>
           <ButtonsWrapper>
             <BtnBg onClick={() => navigate("/")}>На главную</BtnBg>
           </ButtonsWrapper>
@@ -366,23 +474,16 @@ function CardPage() {
     );
   }
 
-  if (!task) {
-    return null;
-  }
-
   const themeClass = themeClassMap[task.topic] || "_orange";
-  const statusKey =
-    task.status === "Без статуса"
-      ? "no-status"
-      : task.status === "Нужно сделать"
-        ? "to-do"
-        : task.status === "В работе"
-          ? "in-progress"
-          : task.status === "Тестирование"
-            ? "testing"
-            : task.status === "Готово"
-              ? "done"
-              : "no-status";
+  const statusKey = statusKeyMap[editStatus] || "no-status";
+
+  const allStatuses = [
+    { key: "no-status", label: "Без статуса" },
+    { key: "to-do", label: "Нужно сделать" },
+    { key: "in-progress", label: "В работе" },
+    { key: "testing", label: "Тестирование" },
+    { key: "done", label: "Готово" },
+  ];
 
   return (
     <Container>
@@ -399,67 +500,54 @@ function CardPage() {
         <StatusBlock>
           <StatusP>Статус</StatusP>
           <StatusThemes>
-            <StatusTheme
-              className={`active ${statusKey === "no-status" ? "" : "hide"}`}
-              $status={statusKey}
-            >
-              <p>Без статуса</p>
-            </StatusTheme>
-            <StatusTheme
-              className={`active ${statusKey === "to-do" ? "" : "hide"}`}
-              $status={statusKey}
-            >
-              <p>Нужно сделать</p>
-            </StatusTheme>
-            <StatusTheme
-              className={`active ${statusKey === "in-progress" ? "" : "hide"}`}
-              $status={statusKey}
-            >
-              <p>В работе</p>
-            </StatusTheme>
-            <StatusTheme
-              className={`active ${statusKey === "testing" ? "" : "hide"}`}
-              $status={statusKey}
-            >
-              <p>Тестирование</p>
-            </StatusTheme>
-            <StatusTheme
-              className={`active ${statusKey === "done" ? "" : "hide"}`}
-              $status={statusKey}
-            >
-              <p>Готово</p>
-            </StatusTheme>
+            {allStatuses.map((s) => (
+              <StatusTheme
+                key={s.key}
+                className={editStatus === s.label ? "selected" : "not-selected"}
+                $status={s.key}
+                onClick={() => handleStatusClick(s.label)}
+              >
+                <p>{s.label}</p>
+              </StatusTheme>
+            ))}
           </StatusThemes>
         </StatusBlock>
 
         <Wrap>
           <FormBlock>
-            <Subttl htmlFor="textArea01">Описание задачи</Subttl>
+            <Subttl htmlFor="editTextArea">Описание задачи</Subttl>
             <Textarea
               name="text"
-              id="textArea01"
-              readOnly
+              id="editTextArea"
               placeholder="Введите описание задачи..."
-              value={task.description || "Нет описания"}
+              value={editDescription}
+              onChange={handleDescriptionChange}
             />
           </FormBlock>
-          <Calendar title="Срок исполнения:" date={new Date(task.date)} />
+          <Calendar
+            title="Срок исполнения:"
+            date={editDate}
+            onDateChange={handleDateChange}
+          />
         </Wrap>
 
         <ButtonsWrapper>
           <BtnGroup>
-            <BtnBorder>
-              <Link to={`/edit-card/${task._id}`}>Редактировать задачу</Link>
+            <BtnBg onClick={handleSave} disabled={isSaving || !isDirty}>
+              {isSaving ? "Сохранение..." : "Сохранить"}
+            </BtnBg>
+            <BtnBorder onClick={handleCancel} disabled={isSaving}>
+              Отменить
             </BtnBorder>
             <BtnBorder onClick={handleDelete} disabled={isDeleting}>
-              {isDeleting ? "Удаление..." : "Удалить задачу"}
+              {isDeleting ? "Удаление..." : "Удалить"}
             </BtnBorder>
           </BtnGroup>
-          <BtnBg onClick={() => navigate("/")}>Закрыть</BtnBg>
+          <BtnBg onClick={handleClose}>Закрыть</BtnBg>
         </ButtonsWrapper>
       </CardWrapper>
     </Container>
   );
 }
 
-export default CardPage;
+export default EditCardPage;

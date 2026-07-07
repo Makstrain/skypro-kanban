@@ -1,8 +1,9 @@
 // src/components/Main/Main.jsx
 import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Column from "../Column/Column";
-//import { getTasks } from "../services/tasks";
 import { getTasks } from "/src/services/tasks";
+import { removeToken } from "/src/services/api";
 import { MainContainer, MainBlock, MainContent } from "./Main.styled";
 
 const statuses = [
@@ -20,34 +21,47 @@ const themeClassMap = {
 };
 
 function Main({ onCardClick }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const fetchTasks = async () => {
+    if (isLoading) return;
+
+    setIsLoading(true);
     try {
-      setLoading(true);
       const data = await getTasks();
       setTasks(data);
       setError("");
     } catch (err) {
+      console.error("❌ Ошибка:", err);
+      if (err.status === 401) {
+        removeToken();
+        navigate("/signin");
+        return;
+      }
       setError(err.message || "Ошибка загрузки задач");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
+  // Загружаем при монтировании
   useEffect(() => {
     fetchTasks();
   }, []);
 
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <p className="loading-text">Загрузка задач...</p>
-      </div>
-    );
-  }
+  // ✅ Обновляем если пришли с флагом refresh
+  useEffect(() => {
+    if (location.state?.refresh) {
+      fetchTasks();
+      // Очищаем state, чтобы при рефреше не было повторного запроса
+      navigate("/", { state: null, replace: true });
+    }
+  }, [location.state]);
 
   if (error) {
     return (

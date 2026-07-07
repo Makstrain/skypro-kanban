@@ -1,4 +1,5 @@
 // src/components/Calendar/Calendar.jsx
+import { useState, useEffect } from "react";
 import {
   CalendarWrapper,
   CalendarTitle,
@@ -16,15 +17,165 @@ import {
   PeriodText,
 } from "./Calendar.styled";
 
-function Calendar({ title, date }) {
+function Calendar({ title, date, onDateChange }) {
+  // Текущая дата для отображения (месяц/год)
+  const [currentDate, setCurrentDate] = useState(new Date());
+  // Выбранная дата
+  const [selectedDate, setSelectedDate] = useState(date || new Date());
+  // Дни в текущем месяце
+  const [days, setDays] = useState([]);
+
+  // Названия месяцев на русском
+  const monthNames = [
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
+  ];
+
+  // Генерация дней для текущего месяца
+  const generateDays = (year, month) => {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+
+    // День недели первого дня (0 - воскресенье, 1 - понедельник)
+    let firstDayOfWeek = firstDay.getDay();
+    // Корректировка для понедельника как первого дня
+    firstDayOfWeek = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
+
+    const daysArray = [];
+
+    // Дни из предыдущего месяца
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+      daysArray.push({
+        day: prevMonthLastDay - i,
+        month: month - 1,
+        year: year,
+        isCurrentMonth: false,
+      });
+    }
+
+    // Дни текущего месяца
+    for (let i = 1; i <= daysInMonth; i++) {
+      daysArray.push({
+        day: i,
+        month: month,
+        year: year,
+        isCurrentMonth: true,
+      });
+    }
+
+    // Дни следующего месяца (до заполнения сетки)
+    const remainingDays = 42 - daysArray.length; // 6 строк по 7 дней
+    for (let i = 1; i <= remainingDays; i++) {
+      daysArray.push({
+        day: i,
+        month: month + 1,
+        year: year,
+        isCurrentMonth: false,
+      });
+    }
+
+    return daysArray;
+  };
+
+  // Обновляем дни при смене месяца
+  useEffect(() => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    setDays(generateDays(year, month));
+  }, [currentDate]);
+
+  // Обновляем выбранную дату если изменилась извне
+  useEffect(() => {
+    if (date) {
+      setSelectedDate(new Date(date));
+    }
+  }, [date]);
+
+  // Переключение на предыдущий месяц
+  const prevMonth = () => {
+    setCurrentDate(
+      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1),
+    );
+  };
+
+  // Переключение на следующий месяц
+  const nextMonth = () => {
+    setCurrentDate(
+      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1),
+    );
+  };
+
+  // Выбор дня
+  const handleDayClick = (day, month, year) => {
+    if (!day.isCurrentMonth) return; // Нельзя выбрать день из другого месяца
+
+    const newDate = new Date(year, month, day.day);
+    setSelectedDate(newDate);
+
+    // Если есть колбэк - вызываем
+    if (onDateChange) {
+      onDateChange(newDate);
+    }
+  };
+
+  // Проверка, является ли день сегодняшним
+  const isToday = (day, month, year) => {
+    const today = new Date();
+    return (
+      today.getDate() === day &&
+      today.getMonth() === month &&
+      today.getFullYear() === year
+    );
+  };
+
+  // Проверка, выбран ли день
+  const isSelected = (day, month, year) => {
+    if (!selectedDate) return false;
+    return (
+      selectedDate.getDate() === day &&
+      selectedDate.getMonth() === month &&
+      selectedDate.getFullYear() === year
+    );
+  };
+
+  // Форматирование даты для отображения
+  const formatDate = (date) => {
+    if (!date) return "";
+    return date.toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  // Проверка, выходной ли день
+  const isWeekend = (index) => {
+    const dayOfWeek = index % 7;
+    return dayOfWeek === 5 || dayOfWeek === 6; // суббота и воскресенье
+  };
+
   return (
     <CalendarWrapper>
       <CalendarTitle>Даты</CalendarTitle>
       <CalendarBlock>
         <CalendarNav>
-          <CalendarMonth>Сентябрь 2023</CalendarMonth>
+          <CalendarMonth>
+            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          </CalendarMonth>
           <NavActions>
-            <NavAction data-action="prev">
+            <NavAction onClick={prevMonth}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="6"
@@ -34,7 +185,7 @@ function Calendar({ title, date }) {
                 <path d="M5.72945 1.95273C6.09018 1.62041 6.09018 1.0833 5.72945 0.750969C5.36622 0.416344 4.7754 0.416344 4.41218 0.750969L0.528487 4.32883C-0.176162 4.97799 -0.176162 6.02201 0.528487 6.67117L4.41217 10.249C4.7754 10.5837 5.36622 10.5837 5.72945 10.249C6.09018 9.9167 6.09018 9.37959 5.72945 9.04727L1.87897 5.5L5.72945 1.95273Z" />
               </svg>
             </NavAction>
-            <NavAction data-action="next">
+            <NavAction onClick={nextMonth}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="6"
@@ -57,47 +208,28 @@ function Calendar({ title, date }) {
             <DayName className="-weekend-">вс</DayName>
           </DaysNames>
           <CellsContainer>
-            <Cell className="other-month">28</Cell>
-            <Cell className="other-month">29</Cell>
-            <Cell className="other-month">30</Cell>
-            <Cell className="cell-day">31</Cell>
-            <Cell className="cell-day">1</Cell>
-            <Cell className="cell-day weekend">2</Cell>
-            <Cell className="cell-day weekend">3</Cell>
-            <Cell className="cell-day">4</Cell>
-            <Cell className="cell-day">5</Cell>
-            <Cell className="cell-day">6</Cell>
-            <Cell className="cell-day">7</Cell>
-            <Cell className="cell-day current">8</Cell>
-            <Cell className="cell-day weekend">9</Cell>
-            <Cell className="cell-day weekend">10</Cell>
-            <Cell className="cell-day">11</Cell>
-            <Cell className="cell-day">12</Cell>
-            <Cell className="cell-day">13</Cell>
-            <Cell className="cell-day">14</Cell>
-            <Cell className="cell-day">15</Cell>
-            <Cell className="cell-day weekend">16</Cell>
-            <Cell className="cell-day weekend">17</Cell>
-            <Cell className="cell-day">18</Cell>
-            <Cell className="cell-day">19</Cell>
-            <Cell className="cell-day">20</Cell>
-            <Cell className="cell-day">21</Cell>
-            <Cell className="cell-day">22</Cell>
-            <Cell className="cell-day weekend">23</Cell>
-            <Cell className="cell-day weekend">24</Cell>
-            <Cell className="cell-day">25</Cell>
-            <Cell className="cell-day">26</Cell>
-            <Cell className="cell-day">27</Cell>
-            <Cell className="cell-day">28</Cell>
-            <Cell className="cell-day">29</Cell>
-            <Cell className="cell-day weekend">30</Cell>
-            <Cell className="other-month weekend">1</Cell>
+            {days.map((day, index) => (
+              <Cell
+                key={index}
+                className={`
+                  ${!day.isCurrentMonth ? "other-month" : "cell-day"}
+                  ${isToday(day.day, day.month, day.year) ? "current" : ""}
+                  ${isSelected(day.day, day.month, day.year) ? "active-day" : ""}
+                  ${isWeekend(index) ? "weekend" : ""}
+                `}
+                onClick={() => handleDayClick(day, day.month, day.year)}
+              >
+                {day.day}
+              </Cell>
+            ))}
           </CellsContainer>
         </CalendarContent>
         <CalendarPeriod>
           <PeriodText>
             {title || "Выберите срок исполнения"}{" "}
-            <span className="date-control">{date || ""}</span>
+            <span className="date-control">
+              {selectedDate ? formatDate(selectedDate) : ""}
+            </span>
           </PeriodText>
         </CalendarPeriod>
       </CalendarBlock>
