@@ -11,7 +11,8 @@ import {
   UserLink,
 } from "./Header.styled";
 
-function Header({ onUserClick, isUserPopupOpen }) {
+//function Header({ onUserClick, isUserPopupOpen }) {
+function Header({ onNewCardClick, onUserClick, isUserPopupOpen }) {
   const popupRef = useRef(null);
   const userLinkRef = useRef(null);
 
@@ -49,9 +50,7 @@ function Header({ onUserClick, isUserPopupOpen }) {
             <UserLink ref={userLinkRef} onClick={onUserClick}>
               Ivan Ivanov
             </UserLink>
-            <div ref={popupRef}>
-              {isUserPopupOpen && <PopUser onClose={onUserClick} />}
-            </div>
+            <div ref={popupRef}>{isUserPopupOpen && <PopUser />}</div>
           </Nav>
         </HeaderBlock>
       </div>

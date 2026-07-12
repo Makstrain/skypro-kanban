@@ -4,55 +4,63 @@ import ProtectedRoute from "./ProtectedRoute";
 import SigninPage from "../pages/SigninPage";
 import SignupPage from "../pages/SignupPage";
 import CardPage from "../pages/CardPage";
-import EditCardPage from "../pages/EditCardPage"; // ← добавить
 import AddCardPage from "../pages/AddCardPage";
+import EditCardPage from "../pages/EditCardPage";
 import ExitPage from "../pages/ExitPage";
 import NotFoundPage from "../pages/NotFoundPage";
 
-function AppRoutes({ isAuth, onLogin, onLogout }) {
+function AppRoutes({ onLogin, onLogout, onCardClick }) {
   return (
     <Routes>
-      {/* Открытые страницы */}
       <Route path="/signin" element={<SigninPage onLogin={onLogin} />} />
       <Route path="/signup" element={<SignupPage />} />
 
-      {/* Главная страница */}
+      {/* ===== МАРШРУТ / — ПУСТОЙ, ПОТОМУ ЧТО MAIN ВСЕГДА В APP.JSX ===== */}
       <Route
         path="/"
         element={
-          <ProtectedRoute isAuth={isAuth}>
-            <div />
+          <ProtectedRoute>
+            <div /> {/* ← пустой, Main уже есть в App.jsx */}
           </ProtectedRoute>
         }
       />
 
-      {/* Защищенные страницы */}
       <Route
         path="/card/:id"
         element={
-          <ProtectedRoute isAuth={isAuth}>
+          <ProtectedRoute>
             <CardPage />
           </ProtectedRoute>
         }
       />
+
       <Route
-        path="/edit-card/:id" // ← новый маршрут
+        path="/edit-card/:id"
         element={
-          <ProtectedRoute isAuth={isAuth}>
+          <ProtectedRoute>
             <EditCardPage />
           </ProtectedRoute>
         }
       />
+
       <Route
         path="/add-card"
         element={
-          <ProtectedRoute isAuth={isAuth}>
+          <ProtectedRoute>
             <AddCardPage />
           </ProtectedRoute>
         }
       />
 
-      <Route path="/exit" element={<ExitPage onLogout={onLogout} />} />
+      <Route
+        path="/exit"
+        element={
+          <ProtectedRoute>
+            <ExitPage onLogout={onLogout} />
+          </ProtectedRoute>
+        }
+      />
+
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

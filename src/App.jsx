@@ -1,24 +1,26 @@
 // src/App.jsx
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { BrowserRouter, useLocation } from "react-router-dom";
 import Header from "./components/Header/Header";
 import AppRoutes from "./components/AppRoutes";
-import { getToken, removeToken } from "./services/api";
 import Main from "./components/Main/Main";
+import { AuthContext } from "./context/AuthContext";
+import { useTasks } from "./context/TasksContext";
 
 function AppContent() {
   const location = useLocation();
-  const [isAuth, setIsAuth] = useState(false);
+  const { isAuth, login, logout } = useContext(AuthContext);
+  const { isLoading: isTasksLoading } = useTasks();
+
   const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
   const hasShownLoading = useRef(false);
 
-  // Проверяем, находится ли пользователь на странице входа или регистрации
   const isAuthPage =
     location.pathname === "/signin" || location.pathname === "/signup";
 
   const handleLogin = () => {
-    setIsAuth(true);
+    login();
     if (!hasShownLoading.current) {
       setShowLoading(true);
       setTimeout(() => {
@@ -29,20 +31,12 @@ function AppContent() {
   };
 
   const handleLogout = () => {
-    removeToken();
-    setIsAuth(false);
+    logout();
     setShowLoading(false);
     hasShownLoading.current = false;
   };
 
-  useEffect(() => {
-    const token = getToken();
-    if (token) {
-      setIsAuth(true);
-    }
-  }, []);
-
-  if (showLoading) {
+  if (showLoading || isTasksLoading) {
     return (
       <div
         style={{
@@ -54,7 +48,9 @@ function AppContent() {
           background: "#EAEEF6",
         }}
       >
-        <p style={{ fontSize: "18px", color: "#666" }}>Загрузка данных...</p>
+        <p style={{ fontSize: "18px", color: "#666" }}>
+          {isTasksLoading ? "Загрузка задач..." : "Загрузка данных..."}
+        </p>
         <div
           style={{
             width: "40px",
@@ -85,13 +81,15 @@ function AppContent() {
         />
       )}
 
-      {/* ✅ Показываем Main ТОЛЬКО если авторизован И НЕ на странице входа */}
+      {/* ===== ДОСКА ВСЕГДА ВИДНА ===== */}
       {isAuth && !isAuthPage && <Main />}
 
+      {/* ===== СТРАНИЦЫ ПОВЕРХ ДОСКИ ===== */}
       <AppRoutes
         isAuth={isAuth}
         onLogin={handleLogin}
         onLogout={handleLogout}
+        onCardClick={() => {}}
       />
 
       {isAuth && (

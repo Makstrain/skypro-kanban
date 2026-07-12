@@ -59,9 +59,10 @@ export default Signin;
 */
 // src/components/Signin/Signin.jsx
 // src/components/Signin/Signin.jsx
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../../services/auth";
+import { AuthContext } from "../../context/AuthContext";
+import { login as loginApi } from "../../services/auth";
 import {
   Container,
   ModalBlock,
@@ -72,12 +73,15 @@ import {
   FormGroup,
 } from "./Signin.styled";
 
-function Signin({ onLogin }) {
-  const [loginValue, setLoginValue] = useState(""); // ← переименовали
+function Signin() {
+  // ← убрали onLogin из пропсов
+  const { login } = useContext(AuthContext); // ← из контекста
+  const navigate = useNavigate();
+
+  const [loginValue, setLoginValue] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -85,8 +89,8 @@ function Signin({ onLogin }) {
     setIsLoading(true);
 
     try {
-      await login(loginValue, password); // ← передаём loginValue
-      onLogin();
+      await loginApi(loginValue, password); // ← запрос к API
+      login(); // ← из контекста — устанавливаем isAuth = true
       navigate("/");
     } catch (err) {
       setError(err.message || "Неверный логин или пароль");
