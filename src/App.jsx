@@ -1,142 +1,113 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "./assets/vite.svg";
-import heroImg from "./assets/hero.png";
-import Header from "./components/Header";
-import Main from "./components/Main";
-import PopNewCard from "./components/popups/PopNewCard";
-import PopBrowse from "./components/popups/PopBrowse";
-import PopUser from "./components/popups/PopUser";
-import "./App.css";
+// src/App.jsx
+import { useState, useEffect, useRef, useContext } from "react";
+import { BrowserRouter, useLocation } from "react-router-dom";
+import Header from "./components/Header/Header";
+import AppRoutes from "./components/AppRoutes";
+import Main from "./components/Main/Main";
+import { AuthContext } from "./context/AuthContext";
+import { useTasks } from "./context/TasksContext";
 
-function App() {
-  const [count, setCount] = useState(0);
-  const [isNewCardOpen, setIsNewCardOpen] = useState(false);
-  const [isBrowseOpen, setIsBrowseOpen] = useState(false);
+function AppContent() {
+  const location = useLocation();
+  const { isAuth, login, logout } = useContext(AuthContext);
+  const { isLoading: isTasksLoading } = useTasks();
+
   const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
+  const hasShownLoading = useRef(false);
+
+  const isAuthPage =
+    location.pathname === "/signin" || location.pathname === "/signup";
+
+  const handleLogin = () => {
+    login();
+    if (!hasShownLoading.current) {
+      setShowLoading(true);
+      setTimeout(() => {
+        setShowLoading(false);
+        hasShownLoading.current = true;
+      }, 1000);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    setShowLoading(false);
+    hasShownLoading.current = false;
+  };
+
+  if (showLoading || isTasksLoading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+          flexDirection: "column",
+          background: "#EAEEF6",
+        }}
+      >
+        <p style={{ fontSize: "18px", color: "#666" }}>
+          {isTasksLoading ? "Загрузка задач..." : "Загрузка данных..."}
+        </p>
+        <div
+          style={{
+            width: "40px",
+            height: "40px",
+            border: "4px solid #f3f3f3",
+            borderTop: "4px solid #4A67FF",
+            borderRadius: "50%",
+            animation: "spin 1s linear infinite",
+            marginTop: "16px",
+          }}
+        />
+        <style>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
 
   return (
     <div className="wrapper">
-      {/* Поп-апы */}
-      {isNewCardOpen && <PopNewCard onClose={() => setIsNewCardOpen(false)} />}
-      {isBrowseOpen && <PopBrowse onClose={() => setIsBrowseOpen(false)} />}
-      {isUserPopupOpen && <PopUser onLogout={() => console.log("Выход")} />}
+      {isAuth && (
+        <Header
+          onUserClick={() => setIsUserPopupOpen(!isUserPopupOpen)}
+          isUserPopupOpen={isUserPopupOpen}
+        />
+      )}
 
-      <Header
-        onNewCardClick={() => setIsNewCardOpen(true)}
-        onUserClick={() => setIsUserPopupOpen(!isUserPopupOpen)}
+      {/* ===== ДОСКА ВСЕГДА ВИДНА ===== */}
+      {isAuth && !isAuthPage && <Main />}
+
+      {/* ===== СТРАНИЦЫ ПОВЕРХ ДОСКИ ===== */}
+      <AppRoutes
+        isAuth={isAuth}
+        onLogin={handleLogin}
+        onLogout={handleLogout}
+        onCardClick={() => {}}
       />
 
-      <Main />
-
-      {/* Секция с hero и счетчиком */}
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      {isAuth && (
+        <>
+          <div className="ticks"></div>
+          <div className="ticks"></div>
+          <section id="spacer"></section>
+        </>
+      )}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
 
