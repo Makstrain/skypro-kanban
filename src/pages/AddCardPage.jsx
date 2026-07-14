@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Calendar from "../components/Calendar/Calendar";
 import { createTask } from "../services/tasks";
+import { ERROR_MESSAGES, getErrorMessage } from "../constants/errorMessages";
+
+// ============ СТИЛИ ============
 
 const Container = styled.div`
   position: fixed;
@@ -79,6 +82,7 @@ const Input = styled.input`
   line-height: 1;
   letter-spacing: -0.14px;
   margin: ${({ theme }) => theme.spacing.xl} 0;
+  color: ${({ theme }) => theme.colors.textPrimary};
 
   &::placeholder {
     font-weight: ${({ theme }) => theme.fonts.weight.regular};
@@ -102,6 +106,7 @@ const Textarea = styled.textarea`
   letter-spacing: -0.14px;
   margin-top: ${({ theme }) => theme.spacing.sm};
   height: 200px;
+  color: ${({ theme }) => theme.colors.textPrimary};
 
   @media screen and (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     max-width: 100%;
@@ -125,7 +130,7 @@ const Subttl = styled.label`
 `;
 
 const Categories = styled.div`
-  margin-bottom: ${({ theme }) => theme.spacing.xl};
+  margin-bottom: 0;
 `;
 
 const CategoriesP = styled.p`
@@ -190,27 +195,41 @@ const ButtonsWrapper = styled.div`
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
-  margin-top: ${({ theme }) => theme.spacing.md};
+  gap: 10px;
+  margin-top: 20px;
   width: 100%;
+  padding-right: 0;
+
+  @media screen and (max-width: ${({ theme }) => theme.breakpoints.tablet}) {
+    margin-top: 40px;
+    justify-content: flex-start;
+  }
+
+  @media screen and (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    flex-direction: column;
+    margin-top: 30px;
+  }
 `;
 
-const BtnBg = styled.button`
+const BtnBorder = styled.button`
   border-radius: ${({ theme }) => theme.borderRadius.sm};
-  background: ${({ theme }) => theme.colors.primary};
-  border: none;
+  border: 0.7px solid ${({ theme }) => theme.colors.borderColor};
   outline: none;
-  color: ${({ theme }) => theme.colors.textLight};
+  background: transparent;
+  color: ${({ theme }) => theme.colors.borderColor};
   height: 30px;
   padding: 0 ${({ theme }) => theme.spacing.sm};
   cursor: pointer;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.primaryHover};
+    background-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.textLight};
+    border-color: ${({ theme }) => theme.colors.textLight};
   }
 
-  a {
-    color: ${({ theme }) => theme.colors.textLight};
-    text-decoration: none;
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   @media screen and (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
@@ -218,6 +237,35 @@ const BtnBg = styled.button`
     height: 40px;
   }
 `;
+
+const BtnBg = styled.button`
+  border-radius: ${({ theme }) => theme.borderRadius.sm};
+  border: 0.7px solid ${({ theme }) => theme.colors.borderColor};
+  outline: none;
+  background: transparent;
+  color: ${({ theme }) => theme.colors.borderColor};
+  height: 30px;
+  padding: 0 ${({ theme }) => theme.spacing.sm};
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.textLight};
+    border-color: ${({ theme }) => theme.colors.textLight};
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  @media screen and (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
+    width: 100%;
+    height: 40px;
+  }
+`;
+
+// ============ КОМПОНЕНТ ============
 
 function AddCardPage() {
   const navigate = useNavigate();
@@ -231,24 +279,34 @@ function AddCardPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+
+    const trimmedTitle = title.trim();
+    const trimmedDescription = description.trim();
+
+    if (!trimmedTitle) {
+      setError(ERROR_MESSAGES.EMPTY_TITLE.message);
+      return;
+    }
+    if (!trimmedDescription) {
+      setError("Описание задачи не может быть пустым");
+      return;
+    }
     setIsLoading(true);
 
     try {
       const taskData = {
-        title: title || "Новая задача",
+        title: trimmedTitle,
         topic: selectedCategory || "Research",
-        description: description || "",
+        description: trimmedDescription || "",
         date: selectedDate.toISOString(),
         status: "Без статуса",
       };
 
-      console.log("📤 Создаём задачу:", taskData);
       await createTask(taskData);
-      console.log("✅ Задача создана!");
       navigate("/", { state: { refresh: true } });
     } catch (err) {
-      console.error("❌ Ошибка создания:", err);
-      setError(err.message || "Ошибка создания задачи");
+      const errorInfo = getErrorMessage(err);
+      setError(errorInfo.message);
     } finally {
       setIsLoading(false);
     }
@@ -318,16 +376,19 @@ function AddCardPage() {
                 {error}
               </p>
             )}
-
-            <ButtonsWrapper>
-              <BtnBg type="submit" disabled={isLoading}>
-                {isLoading ? "Создание..." : "Создать задачу"}
-              </BtnBg>
-            </ButtonsWrapper>
           </Form>
 
           <Calendar date={selectedDate} onDateChange={setSelectedDate} />
         </Wrap>
+
+        <ButtonsWrapper>
+          <BtnBorder type="button" onClick={() => navigate("/")}>
+            Отмена
+          </BtnBorder>
+          <BtnBg type="submit" disabled={isLoading} onClick={handleSubmit}>
+            {isLoading ? "Создание..." : "Создать задачу"}
+          </BtnBg>
+        </ButtonsWrapper>
       </CardWrapper>
     </Container>
   );

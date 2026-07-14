@@ -3,9 +3,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import Calendar from "../components/Calendar/Calendar";
-import { getTaskById, updateTask, deleteTask } from "../services/tasks";
-
-// ============ СТИЛИ (без изменений) ============
+import { getTaskById, updateTask, deleteTask } from "/src/services/tasks";
+import { ERROR_MESSAGES, getErrorMessage } from "/src/constants/errorMessages";
 
 const Container = styled.div`
   position: fixed;
@@ -46,13 +45,6 @@ const Title = styled.h3`
   font-size: ${({ theme }) => theme.fonts.size.xl};
   font-weight: ${({ theme }) => theme.fonts.weight.semibold};
   line-height: ${({ theme }) => theme.fonts.size.xxl};
-
-  span {
-    color: ${({ theme }) => theme.colors.textSecondary};
-    font-size: ${({ theme }) => theme.fonts.size.sm};
-    font-weight: ${({ theme }) => theme.fonts.weight.regular};
-    margin-left: ${({ theme }) => theme.spacing.md};
-  }
 `;
 
 const ThemeTop = styled.div`
@@ -222,6 +214,7 @@ const Textarea = styled.textarea`
   margin-top: ${({ theme }) => theme.spacing.sm};
   height: 200px;
   font-family: inherit;
+  color: ${({ theme }) => theme.colors.textPrimary};
 
   &:focus {
     border-color: ${({ theme }) => theme.colors.primary};
@@ -256,17 +249,18 @@ const BtnGroup = styled.div`
 
 const BtnBorder = styled.button`
   border-radius: ${({ theme }) => theme.borderRadius.sm};
-  border: 0.7px solid ${({ theme }) => theme.colors.primary};
+  border: 0.7px solid ${({ theme }) => theme.colors.borderColor};
   outline: none;
   background: transparent;
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.borderColor};
   height: 30px;
   padding: 0 ${({ theme }) => theme.spacing.sm};
   cursor: pointer;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.primaryHover};
+    background-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.textLight};
+    border-color: ${({ theme }) => theme.colors.textLight};
   }
 
   &:disabled {
@@ -282,16 +276,18 @@ const BtnBorder = styled.button`
 
 const BtnBg = styled.button`
   border-radius: ${({ theme }) => theme.borderRadius.sm};
-  background: ${({ theme }) => theme.colors.primary};
-  border: none;
+  border: 0.7px solid ${({ theme }) => theme.colors.borderColor};
   outline: none;
-  color: ${({ theme }) => theme.colors.textLight};
+  background: transparent;
+  color: ${({ theme }) => theme.colors.borderColor};
   height: 30px;
   padding: 0 ${({ theme }) => theme.spacing.sm};
   cursor: pointer;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.primaryHover};
+    background-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.textLight};
+    border-color: ${({ theme }) => theme.colors.textLight};
   }
 
   &:disabled {
@@ -328,7 +324,7 @@ function EditCardPage() {
   const navigate = useNavigate();
 
   const [task, setTask] = useState(null);
-  const [loading, setLoading] = useState(true); // ✅ добавили состояние загрузки
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const [editDescription, setEditDescription] = useState("");
@@ -339,10 +335,9 @@ function EditCardPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
 
-  // Загружаем задачу
   useEffect(() => {
     const fetchTask = async () => {
-      setLoading(true); // ✅ начинаем загрузку
+      setLoading(true);
       try {
         const data = await getTaskById(id);
         setTask(data);
@@ -350,10 +345,17 @@ function EditCardPage() {
         setEditStatus(data.status || "Без статуса");
         setEditDate(new Date(data.date));
         setError("");
+        setLoading(false);
       } catch (err) {
-        setError(err.message || "Ошибка загрузки задачи");
-      } finally {
-        setLoading(false); // ✅ загрузка завершена
+        if (err.status === 404) {
+          setError(ERROR_MESSAGES.TASK_NOT_FOUND.message);
+          setLoading(false);
+          return;
+        }
+
+        const errorInfo = getErrorMessage(err);
+        setError(errorInfo.message);
+        setLoading(false);
       }
     };
 
@@ -365,16 +367,22 @@ function EditCardPage() {
     }
   }, [id]);
 
-  // ✅ Сохранить изменения
   const handleSave = async () => {
     if (!isDirty) return;
 
+    const trimmedDescription = editDescription.trim();
+    if (!trimmedDescription) {
+      setError("Описание задачи не может быть пустым");
+      return;
+    }
     setIsSaving(true);
+    setError("");
+
     try {
       const taskData = {
         title: task.title,
         topic: task.topic,
-        description: editDescription,
+        description: trimmedDescription || "",
         status: editStatus,
         date: editDate.toISOString(),
       };
@@ -382,58 +390,51 @@ function EditCardPage() {
       await updateTask(id, taskData);
       navigate("/", { state: { refresh: true }, replace: true });
     } catch (err) {
-      console.error("❌ Ошибка сохранения:", err);
-      setError(err.message || "Ошибка сохранения");
+      const errorInfo = getErrorMessage(err);
+      setError(errorInfo.message);
       setIsSaving(false);
     }
   };
 
-  // ✅ Отменить изменения
   const handleCancel = () => {
     navigate(`/card/${id}`);
   };
 
-  // ✅ Удалить задачу
   const handleDelete = async () => {
-    if (!window.confirm("Вы уверены, что хотите удалить задачу?")) return;
+    if (!window.confirm(ERROR_MESSAGES.DELETE_CONFIRM.message)) return;
 
     setIsDeleting(true);
+    setError("");
+
     try {
       await deleteTask(id);
       navigate("/", { state: { refresh: true }, replace: true });
     } catch (err) {
-      console.error("❌ Ошибка удаления:", err);
-      setError(err.message || "Ошибка удаления задачи");
+      const errorInfo = getErrorMessage(err);
+      setError(errorInfo.message);
       setIsDeleting(false);
     }
   };
 
-  // ✅ Закрыть
   const handleClose = () => {
     navigate("/");
   };
 
-  // ✅ Выбор статуса
   const handleStatusClick = (status) => {
     setEditStatus(status);
     setIsDirty(true);
   };
 
-  // ✅ Изменение описания
   const handleDescriptionChange = (e) => {
     setEditDescription(e.target.value);
     setIsDirty(true);
   };
 
-  // ✅ Изменение даты
   const handleDateChange = (date) => {
     setEditDate(date);
     setIsDirty(true);
   };
 
-  // ============ РЕНДЕР ============
-
-  // ✅ Показываем загрузку, пока данные не пришли
   if (loading) {
     return (
       <Container>
@@ -489,9 +490,7 @@ function EditCardPage() {
     <Container>
       <CardWrapper>
         <TopBlock>
-          <Title>
-            {task.title} <span>ID: {task._id}</span>
-          </Title>
+          <Title>{task.title}</Title>
           <ThemeTop color={themeClass}>
             <p>{task.topic}</p>
           </ThemeTop>

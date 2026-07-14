@@ -30,6 +30,7 @@ export const Title = styled.h2`
   text-align: center;
   font-size: ${({ theme }) => theme.fonts.size.xl};
   font-weight: ${({ theme }) => theme.fonts.weight.bold};
+  color: ${({ theme }) => theme.colors.textPrimary};
   margin-bottom: ${({ theme }) => theme.spacing.xl};
 `;
 
@@ -48,6 +49,8 @@ export const Input = styled.input`
   border: 0.7px solid ${({ theme }) => theme.colors.borderLight};
   outline: none;
   margin-bottom: 7px;
+  background: transparent;
+  color: ${({ theme }) => theme.colors.textPrimary};
 
   &::placeholder {
     color: ${({ theme }) => theme.colors.textSecondary};
@@ -79,12 +82,12 @@ export const FormGroup = styled.div`
   text-align: center;
 
   p {
-    color: rgba(148, 166, 190, 0.4);
+    color: ${({ theme }) => theme.colors.textSecondary};
     font-size: ${({ theme }) => theme.fonts.size.sm};
   }
 
   a {
-    color: rgba(148, 166, 190, 0.4);
+    color: ${({ theme }) => theme.colors.textSecondary};
     text-decoration: underline;
     cursor: pointer;
   }

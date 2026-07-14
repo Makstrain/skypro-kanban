@@ -1,6 +1,7 @@
 // src/components/Header/Header.jsx
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
+import { ThemeContext } from "../../context/ThemeContext";
 import PopUser from "../popups/PopUser/PopUser";
 import {
   HeaderContainer,
@@ -11,10 +12,10 @@ import {
   UserLink,
 } from "./Header.styled";
 
-//function Header({ onUserClick, isUserPopupOpen }) {
-function Header({ onNewCardClick, onUserClick, isUserPopupOpen }) {
+function Header({ onUserClick, isUserPopupOpen, onLogoutClick }) {
   const popupRef = useRef(null);
   const userLinkRef = useRef(null);
+  const { themeMode } = useContext(ThemeContext);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -40,7 +41,14 @@ function Header({ onNewCardClick, onUserClick, isUserPopupOpen }) {
         <HeaderBlock>
           <Logo>
             <Link to="/">
-              <img src="images/logo.png" alt="logo" />
+              <img
+                src={
+                  themeMode === "dark"
+                    ? "/images/logo_dark.png"
+                    : "/images/logo.png"
+                }
+                alt="logo"
+              />
             </Link>
           </Logo>
           <Nav>
@@ -50,7 +58,9 @@ function Header({ onNewCardClick, onUserClick, isUserPopupOpen }) {
             <UserLink ref={userLinkRef} onClick={onUserClick}>
               Ivan Ivanov
             </UserLink>
-            <div ref={popupRef}>{isUserPopupOpen && <PopUser />}</div>
+            <div ref={popupRef}>
+              {isUserPopupOpen && <PopUser onLogoutClick={onLogoutClick} />}
+            </div>
           </Nav>
         </HeaderBlock>
       </div>

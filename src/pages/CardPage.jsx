@@ -2,10 +2,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import styled from "styled-components";
-import { getTaskById, deleteTask, getTasks } from "../services/tasks";
+import { getTaskById, deleteTask, getTasks } from "/src/services/tasks";
+import { ERROR_MESSAGES, getErrorMessage } from "/src/constants/errorMessages";
 import Calendar from "../components/Calendar/Calendar";
-
-// ============ СТИЛИ (без изменений) ============
 
 const Container = styled.div`
   position: fixed;
@@ -46,13 +45,6 @@ const Title = styled.h3`
   font-size: ${({ theme }) => theme.fonts.size.xl};
   font-weight: ${({ theme }) => theme.fonts.weight.semibold};
   line-height: ${({ theme }) => theme.fonts.size.xxl};
-
-  span {
-    color: ${({ theme }) => theme.colors.textSecondary};
-    font-size: ${({ theme }) => theme.fonts.size.sm};
-    font-weight: ${({ theme }) => theme.fonts.weight.regular};
-    margin-left: ${({ theme }) => theme.spacing.md};
-  }
 `;
 
 const ThemeTop = styled.div`
@@ -215,6 +207,7 @@ const Textarea = styled.textarea`
   letter-spacing: -0.14px;
   margin-top: ${({ theme }) => theme.spacing.sm};
   height: 200px;
+  color: ${({ theme }) => theme.colors.textPrimary};
 
   @media screen and (max-width: ${({ theme }) => theme.breakpoints.mobile}) {
     max-width: 100%;
@@ -245,21 +238,22 @@ const BtnGroup = styled.div`
 
 const BtnBorder = styled.button`
   border-radius: ${({ theme }) => theme.borderRadius.sm};
-  border: 0.7px solid ${({ theme }) => theme.colors.primary};
+  border: 0.7px solid ${({ theme }) => theme.colors.borderColor};
   outline: none;
   background: transparent;
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.borderColor};
   height: 30px;
   padding: 0 ${({ theme }) => theme.spacing.sm};
   cursor: pointer;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.primaryHover};
+    background-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.textLight};
+    border-color: ${({ theme }) => theme.colors.textLight};
   }
 
   a {
-    color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.borderColor};
     text-decoration: none;
   }
 
@@ -298,7 +292,7 @@ const BtnBg = styled.button`
   }
 `;
 
-// ============ МАППИНГ СТАТУСОВ ============
+// ============ МАППИНГ ============
 
 const themeClassMap = {
   "Web Design": "_orange",
@@ -323,7 +317,13 @@ function CardPage() {
         setTask(data);
         setError("");
       } catch (err) {
-        setError(err.message || "Ошибка загрузки задачи");
+        if (err.status === 404) {
+          setError(ERROR_MESSAGES.TASK_NOT_FOUND.message);
+          return;
+        }
+
+        const errorInfo = getErrorMessage(err);
+        setError(errorInfo.message);
       }
     };
 
@@ -332,22 +332,19 @@ function CardPage() {
     }
   }, [id]);
 
-  // ✅ Удаление задачи с обновлением доски
   const handleDelete = async () => {
-    if (!window.confirm("Вы уверены, что хотите удалить задачу?")) return;
+    if (!window.confirm(ERROR_MESSAGES.DELETE_CONFIRM.message)) return;
 
     setIsDeleting(true);
+    setError("");
+
     try {
       await deleteTask(id);
-
-      // ✅ Обновляем данные на главной
       await getTasks();
-
-      // Переходим на главную с флагом обновления
       navigate("/", { state: { refresh: true }, replace: true });
     } catch (err) {
-      console.error("❌ Ошибка удаления:", err);
-      setError(err.message || "Ошибка удаления задачи");
+      const errorInfo = getErrorMessage(err);
+      setError(errorInfo.message);
       setIsDeleting(false);
     }
   };
@@ -388,9 +385,7 @@ function CardPage() {
     <Container>
       <CardWrapper>
         <TopBlock>
-          <Title>
-            {task.title} <span>ID: {task._id}</span>
-          </Title>
+          <Title>{task.title}</Title>
           <ThemeTop color={themeClass}>
             <p>{task.topic}</p>
           </ThemeTop>

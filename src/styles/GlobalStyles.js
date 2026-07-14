@@ -12,7 +12,8 @@ const GlobalStyles = createGlobalStyle`
     width: 100%;
     height: 100%;
     font-family: "Roboto", Arial, Helvetica, sans-serif;
-    color: #000000;
+    color: ${({ theme }) => theme.colors.textPrimary};
+    background-color: ${({ theme }) => theme.colors.bgPrimary};
   }
 
   .wrapper {
@@ -20,7 +21,7 @@ const GlobalStyles = createGlobalStyle`
     width: 100vw;
     min-height: 100vh;
     overflow: hidden;
-    background-color: #f1f1f1;
+    background-color: ${({ theme }) => theme.colors.bgPrimary};
   }
 
   .container {
@@ -40,10 +41,10 @@ const GlobalStyles = createGlobalStyle`
 
   .loading-text {
     font-size: 18px;
-    color: #94a6be;
     font-weight: 500;
     letter-spacing: 0.5px;
     text-align: center;
+    color: ${({ theme }) => theme.colors.textSecondary};
   }
 `;
 

@@ -1,5 +1,5 @@
 // src/components/Column/Column.styled.js
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 export const ColumnWrapper = styled.div`
   width: 20%;
@@ -28,19 +28,45 @@ export const ColumnTitle = styled.div`
 
 export const CardsContainer = styled.div`
   width: 100%;
-  display: block;
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 100px;
+  padding: 4px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+
+  background: ${({ $isDraggingOver }) =>
+    $isDraggingOver ? "rgba(74, 103, 255, 0.05)" : "transparent"};
 
   @media screen and (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
-    width: 100%;
-    display: flex;
-    overflow-y: auto;
+    flex-direction: row;
+    overflow-x: auto;
+    min-height: auto;
+    padding: 8px;
   }
 `;
 
 export const CardsItem = styled.div`
   padding: 5px;
-  animation-name: card-animation;
-  animation-duration: 500ms;
-  animation-timing-function: linear;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  ${({ $isDragging }) =>
+    $isDragging &&
+    css`
+      transform: rotate(2deg) scale(1.02);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    `}
+
+  @media screen and (max-width: ${({ theme }) => theme.breakpoints.desktop}) {
+    flex: 0 0 auto;
+    min-width: 220px;
+  }
 `;

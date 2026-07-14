@@ -53,11 +53,13 @@ export const Checkbox = styled.input`
   width: 24px;
   height: 13px;
   border-radius: 100px;
-  background: ${({ theme }) => theme.colors.bgSecondary};
+  background: #ffffff; // ← овал белый
   outline: none;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
+  cursor: pointer;
+  border: 0.7px solid ${({ theme }) => theme.colors.borderLight};
 
   &::before {
     content: "";
@@ -67,12 +69,12 @@ export const Checkbox = styled.input`
     width: 11px;
     height: 11px;
     border-radius: ${({ theme }) => theme.borderRadius.round};
-    background-color: ${({ theme }) => theme.colors.textSecondary};
-    transition: 0.5s;
+    background-color: #565eef; // ← кружок синий
+    transition: 0.3s;
   }
 
   &:checked::before {
-    left: 12px;
+    left: 12px; // ← смещается вправо
   }
 `;
 
@@ -80,18 +82,19 @@ export const LogoutButton = styled.button`
   width: 72px;
   height: 30px;
   background: transparent;
-  color: ${({ theme }) => theme.colors.primary};
   border-radius: ${({ theme }) => theme.borderRadius.sm};
-  border: 1px solid ${({ theme }) => theme.colors.primary};
+  border: 1px solid ${({ theme }) => theme.colors.borderColor};
+  color: ${({ theme }) => theme.colors.borderColor};
   cursor: pointer;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.primaryHover};
+    background-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.textLight};
+    border-color: ${({ theme }) => theme.colors.textLight};
   }
 
   a {
-    color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.borderColor};
     text-decoration: none;
   }
 

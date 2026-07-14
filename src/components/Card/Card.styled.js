@@ -11,6 +11,8 @@ export const CardWrapper = styled.div`
   align-items: flex-start;
   justify-content: stretch;
   padding: 15px 13px 19px;
+  border: 0.7px solid ${({ theme }) => theme.colors.borderLight};
+  box-shadow: ${({ theme }) => theme.colors.shadow};
 `;
 
 export const CardGroup = styled.div`

@@ -1,5 +1,4 @@
 // src/components/Exit/Exit.jsx
-import { useNavigate } from "react-router-dom";
 import {
   Container,
   ModalBlock,
@@ -9,21 +8,14 @@ import {
   ButtonNo,
 } from "./Exit.styled";
 
-function Exit({ onLogout }) {
-  const navigate = useNavigate();
-
-  const handleExit = () => {
-    onLogout();
-    navigate("/signin");
-  };
-
+function Exit({ onConfirm, onCancel }) {
   return (
     <Container>
       <ModalBlock>
         <Title>Выйти из аккаунта?</Title>
         <ButtonGroup>
-          <ButtonYes onClick={handleExit}>Да, выйти</ButtonYes>
-          <ButtonNo onClick={() => navigate("/")}>Нет, остаться</ButtonNo>
+          <ButtonYes onClick={onConfirm}>Да, выйти</ButtonYes>
+          <ButtonNo onClick={onCancel}>Нет, остаться</ButtonNo>
         </ButtonGroup>
       </ModalBlock>
     </Container>

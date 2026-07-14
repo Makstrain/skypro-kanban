@@ -1,0 +1,181 @@
+// src/styles/themes.js
+
+export const lightTheme = {
+  colors: {
+    white: "#ffffff",
+    black: "#000000",
+    bgPrimary: "#f1f1f1",
+    bgSecondary: "#eaeef6",
+    bgCard: "#ffffff",
+    textPrimary: "#000000",
+    textSecondary: "#94a6be",
+    textLight: "#ffffff",
+    primary: "#565eef",
+    primaryHover: "#33399b",
+    borderColor: "#565eef",
+    orange: {
+      bg: "#ffe4c2",
+      text: "#ff6d00",
+    },
+    green: {
+      bg: "#b4fdd1",
+      text: "#06b16e",
+    },
+    purple: {
+      bg: "#e9d4ff",
+      text: "#9a48f1",
+    },
+    gray: {
+      bg: "#94a6be",
+      text: "#ffffff",
+    },
+    border: "#d4dbe5",
+    borderLight: "rgba(148, 166, 190, 0.4)",
+    shadow: "0px 10px 39px 0px rgba(26, 56, 101, 0.21)",
+  },
+  fonts: {
+    primary: "'Roboto', Arial, Helvetica, sans-serif",
+    size: {
+      xs: "10px",
+      sm: "14px",
+      md: "16px",
+      lg: "18px",
+      xl: "20px",
+      xxl: "24px",
+    },
+    weight: {
+      regular: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+    },
+    lineHeight: {
+      tight: 1,
+      normal: 1.5,
+      relaxed: 1.8,
+    },
+  },
+  spacing: {
+    xs: "4px",
+    sm: "8px",
+    md: "12px",
+    lg: "16px",
+    xl: "24px",
+    xxl: "32px",
+    xxxl: "48px",
+  },
+  borderRadius: {
+    sm: "4px",
+    md: "8px",
+    lg: "10px",
+    xl: "18px",
+    xxl: "24px",
+    round: "50%",
+  },
+  breakpoints: {
+    mobile: "375px",
+    tablet: "660px",
+    laptop: "1024px",
+    desktop: "1200px",
+  },
+  transitions: {
+    default: "0.3s",
+    slow: "0.5s",
+  },
+  zIndex: {
+    header: 10,
+    overlay: 100,
+    popup: 200,
+    modal: 300,
+  },
+};
+
+export const darkTheme = {
+  colors: {
+    white: "#20202C",
+    black: "#FFFFFF",
+    bgPrimary: "#151419",
+    bgSecondary: "#20202C",
+    bgCard: "#20202C",
+    textPrimary: "#FFFFFF",
+    textSecondary: "#94A6BE",
+    textLight: "#FFFFFF",
+    primary: "#565EEF",
+    primaryHover: "#33399b",
+    borderColor: "#FFFFFF",
+    orange: {
+      bg: "#FF6D00",
+      text: "#FFE4C2",
+    },
+    green: {
+      bg: "#06B16E",
+      text: "#B4FDD1",
+    },
+    purple: {
+      bg: "#9A48F1",
+      text: "#E9D4FF",
+    },
+    gray: {
+      bg: "#94A6BE",
+      text: "#FFFFFF",
+    },
+    border: "#4E5566",
+    borderLight: "rgba(148, 166, 190, 0.4)",
+    shadow: "0px 10px 39px 0px rgba(148, 166, 190, 0.40)",
+  },
+  fonts: {
+    primary: "'Roboto', Arial, Helvetica, sans-serif",
+    size: {
+      xs: "10px",
+      sm: "14px",
+      md: "16px",
+      lg: "18px",
+      xl: "20px",
+      xxl: "24px",
+    },
+    weight: {
+      regular: 400,
+      medium: 500,
+      semibold: 600,
+      bold: 700,
+    },
+    lineHeight: {
+      tight: 1,
+      normal: 1.5,
+      relaxed: 1.8,
+    },
+  },
+  spacing: {
+    xs: "4px",
+    sm: "8px",
+    md: "12px",
+    lg: "16px",
+    xl: "24px",
+    xxl: "32px",
+    xxxl: "48px",
+  },
+  borderRadius: {
+    sm: "4px",
+    md: "8px",
+    lg: "10px",
+    xl: "18px",
+    xxl: "24px",
+    round: "50%",
+  },
+  breakpoints: {
+    mobile: "375px",
+    tablet: "660px",
+    laptop: "1024px",
+    desktop: "1200px",
+  },
+  transitions: {
+    default: "0.3s",
+    slow: "0.5s",
+  },
+  zIndex: {
+    header: 10,
+    overlay: 100,
+    popup: 200,
+    modal: 300,
+  },
+};

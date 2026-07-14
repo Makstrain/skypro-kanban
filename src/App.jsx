@@ -4,6 +4,7 @@ import { BrowserRouter, useLocation } from "react-router-dom";
 import Header from "./components/Header/Header";
 import AppRoutes from "./components/AppRoutes";
 import Main from "./components/Main/Main";
+import Exit from "./components/Exit/Exit";
 import { AuthContext } from "./context/AuthContext";
 import { useTasks } from "./context/TasksContext";
 
@@ -14,10 +15,17 @@ function AppContent() {
 
   const [isUserPopupOpen, setIsUserPopupOpen] = useState(false);
   const [showLoading, setShowLoading] = useState(false);
+  const [isExitModalOpen, setIsExitModalOpen] = useState(false);
   const hasShownLoading = useRef(false);
 
   const isAuthPage =
     location.pathname === "/signin" || location.pathname === "/signup";
+
+  useEffect(() => {
+    if (location.pathname === "/") {
+      setIsUserPopupOpen(false);
+    }
+  }, [location.pathname]);
 
   const handleLogin = () => {
     login();
@@ -30,10 +38,20 @@ function AppContent() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogoutClick = () => {
+    setIsExitModalOpen(true);
+    setIsUserPopupOpen(false);
+  };
+
+  const confirmLogout = () => {
+    setIsExitModalOpen(false);
     logout();
     setShowLoading(false);
     hasShownLoading.current = false;
+  };
+
+  const cancelLogout = () => {
+    setIsExitModalOpen(false);
   };
 
   if (showLoading || isTasksLoading) {
@@ -78,19 +96,22 @@ function AppContent() {
         <Header
           onUserClick={() => setIsUserPopupOpen(!isUserPopupOpen)}
           isUserPopupOpen={isUserPopupOpen}
+          onLogoutClick={handleLogoutClick}
         />
       )}
 
-      {/* ===== ДОСКА ВСЕГДА ВИДНА ===== */}
       {isAuth && !isAuthPage && <Main />}
 
-      {/* ===== СТРАНИЦЫ ПОВЕРХ ДОСКИ ===== */}
       <AppRoutes
         isAuth={isAuth}
         onLogin={handleLogin}
-        onLogout={handleLogout}
+        onLogout={confirmLogout}
         onCardClick={() => {}}
       />
+
+      {isExitModalOpen && (
+        <Exit onConfirm={confirmLogout} onCancel={cancelLogout} />
+      )}
 
       {isAuth && (
         <>

@@ -2,11 +2,18 @@
 import styled from "styled-components";
 
 export const Container = styled.div`
+  position: fixed; // ← важно!
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background-color: ${({ theme }) => theme.colors.bgPrimary};
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9999; // ← большой z-index, чтобы перекрыть всё
+  padding: 20px;
 `;
 
 export const ModalBlock = styled.div`
@@ -17,6 +24,8 @@ export const ModalBlock = styled.div`
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   border: 0.7px solid ${({ theme }) => theme.colors.border};
   box-shadow: ${({ theme }) => theme.colors.shadow};
+  position: relative; // ← добавить
+  z-index: 10000; // ← добавить
 
   @media screen and (max-width: 375px) {
     padding: 50px 20px;
@@ -30,6 +39,7 @@ export const Title = styled.h2`
   line-height: 30px;
   letter-spacing: -0.4px;
   margin-bottom: ${({ theme }) => theme.spacing.xl};
+  color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
 export const ButtonGroup = styled.div`
@@ -55,7 +65,7 @@ export const ButtonYes = styled.button`
   justify-content: center;
   font-size: ${({ theme }) => theme.fonts.size.sm};
   font-weight: ${({ theme }) => theme.fonts.weight.medium};
-  color: ${({ theme }) => theme.colors.textLight};
+  color: #ffffff;
   cursor: pointer;
   margin-right: 10px;
 
@@ -76,19 +86,20 @@ export const ButtonNo = styled.button`
   height: 30px;
   background: transparent;
   border-radius: ${({ theme }) => theme.borderRadius.sm};
-  border: 0.7px solid ${({ theme }) => theme.colors.primary};
+  border: 0.7px solid ${({ theme }) => theme.colors.borderColor};
   outline: none;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: ${({ theme }) => theme.fonts.size.sm};
   font-weight: ${({ theme }) => theme.fonts.weight.medium};
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.borderColor};
   cursor: pointer;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.primaryHover};
-    color: ${({ theme }) => theme.colors.textLight};
+    background: ${({ theme }) => theme.colors.primary};
+    color: #ffffff;
+    border-color: #ffffff;
   }
 
   @media screen and (max-width: 375px) {

@@ -38,7 +38,7 @@ export const CreateButton = styled.button`
   height: 30px;
   border-radius: ${({ theme }) => theme.borderRadius.sm};
   background-color: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.textLight};
+  color: #ffffff;
   border: none;
   font-size: ${({ theme }) => theme.fonts.size.sm};
   line-height: 1;
@@ -51,7 +51,7 @@ export const CreateButton = styled.button`
   }
 
   a {
-    color: ${({ theme }) => theme.colors.textLight};
+    color: #ffffff;
     text-decoration: none;
   }
 `;
@@ -64,7 +64,12 @@ export const UserLink = styled.a`
   justify-content: center;
   font-size: ${({ theme }) => theme.fonts.size.sm};
   line-height: 20px;
-  color: ${({ theme }) => theme.colors.primary};
+  color: ${
+    ({ theme }) =>
+      theme.colors.white === "#ffffff"
+        ? theme.colors.primary // белая тема → синий (#565EEF)
+        : theme.colors.textLight // тёмная тема → белый (#FFFFFF)
+  };
   text-decoration: none;
   cursor: pointer;
 
@@ -78,8 +83,16 @@ export const UserLink = styled.a`
     width: 6px;
     height: 6px;
     border-radius: 1px;
-    border-left: 1.9px solid ${({ theme }) => theme.colors.primary};
-    border-bottom: 1.9px solid ${({ theme }) => theme.colors.primary};
+    border-left: 1.9px solid
+      ${({ theme }) =>
+        theme.colors.white === "#ffffff"
+          ? theme.colors.primary
+          : theme.colors.textLight};
+    border-bottom: 1.9px solid
+      ${({ theme }) =>
+        theme.colors.white === "#ffffff"
+          ? theme.colors.primary
+          : theme.colors.textLight};
     transform: rotate(-45deg);
     margin: -6px 0 0 5px;
     padding: 0;

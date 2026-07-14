@@ -15,12 +15,11 @@ function AppRoutes({ onLogin, onLogout, onCardClick }) {
       <Route path="/signin" element={<SigninPage onLogin={onLogin} />} />
       <Route path="/signup" element={<SignupPage />} />
 
-      {/* ===== МАРШРУТ / — ПУСТОЙ, ПОТОМУ ЧТО MAIN ВСЕГДА В APP.JSX ===== */}
       <Route
         path="/"
         element={
           <ProtectedRoute>
-            <div /> {/* ← пустой, Main уже есть в App.jsx */}
+            <div />
           </ProtectedRoute>
         }
       />
